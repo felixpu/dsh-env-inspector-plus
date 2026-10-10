@@ -1,0 +1,18 @@
+# dsh-env-inspector-plus 组合包补丁：把插件行插入 profile。
+#
+# 宿主半身（lib/index.js）贡献两样东西：
+#   - `env_inspect` 只读工具（分组统计 + 键名指纹，不含任何变量值）；
+#   - `GET /dsh-env-inspector/snapshot` 同源只读路由（设置分页的取数口）。
+# 客户端半身（client/client.js）据此在「设置」里注册一格「环境体检」分页。
+#
+# 该行不依赖任何其他插件行，也不覆盖任何既有行（id 唯一）。
+#
+# 改名说明：npm 上 `dsh-env-inspector` 已被第三方占用（geeklei，0.3.0），
+# 故包名改为此名。包名、行 id、宿主 name 导出、客户端 bundle id 全部随之改为
+# `dsh-env-inspector-plus` —— bundle id 必须等于包名，否则 dsh-client-modules
+# 会报 "bundle loaded without registering <包名>" 并整页加载失败。
+# 而 HTTP 路由与设置分页 id 刻意**保留原名** dsh-env-inspector，避免既有
+# profile 的注册点失效。
+- insert:
+    - id: dsh-env-inspector-plus
+      name: 'dsh-env-inspector-plus'

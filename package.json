@@ -1,0 +1,54 @@
+{
+  "name": "dsh-env-inspector-plus",
+  "version": "0.1.4",
+  "description": "环境体检：在「设置 → 环境体检」加一个分页，展示当前 DSH 宿主进程的身份（pid / 入口 / 工作目录 / Node / 运行时长）与环境变量分组（总数、DSH_ 前缀组、凭证形态组），值一律不出宿主；同时给模型一个只读的 env_inspect 工具。",
+  "icon": "icon.svg",
+  "type": "module",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felixpu/dsh-env-inspector-plus.git"
+  },
+  "homepage": "https://github.com/felixpu/dsh-env-inspector-plus#readme",
+  "bugs": {
+    "url": "https://github.com/felixpu/dsh-env-inspector-plus/issues"
+  },
+  "author": "felixpu",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client",
+    "cordis.patch.yml",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "env",
+    "environment",
+    "inspector",
+    "settings"
+  ],
+  "license": "MIT"
+}

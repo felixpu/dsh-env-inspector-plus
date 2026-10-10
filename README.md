@@ -39,7 +39,7 @@
 ## 安装
 
 ```sh
-dsh plugin --profile web add dsh-env-inspector-plus
+dsh plugin --profile web add github:felixpu/dsh-env-inspector-plus
 ```
 
 安装后重启宿主进程。

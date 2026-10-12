@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Environment inspection",
+    "description": "Adds a Settings → Environment inspection page showing the current DSH Host process identity (pid, entry, working directory, Node, uptime) and environment-variable groups (total, DSH_ prefix, credential-shaped) without ever exposing values, plus a read-only env_inspect tool for the model."
+  }
+}

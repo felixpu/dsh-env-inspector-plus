@@ -66,6 +66,24 @@ env_inspect
 > 路由路径**保留原名** `dsh-env-inspector`（未随包名改为 `-plus`），
 > 以避免既有 profile 的注册点失效。
 
+## 展示元数据（locale）
+
+`locale/en.json` 与 `locale/zh.json` 提供**插件展示元数据**（`meta.title` / `meta.description`），
+Plugin Manager 与设置页**无需激活插件**即可读取，用于显示本地化的插件名与说明。
+这与运行时 UI 文案（客户端 `ctx.locale.register`）是两套东西。
+
+```json
+{ "meta": { "title": "…", "description": "…" } }
+```
+
+⚠️ 两个容易漏的点（漏任一个都会**静默失效**，不报错）：
+
+1. **必须在 `package.json` 的 `exports` 里导出 `./locale/*.json`** —— 宿主经 Node 模块解析器
+   读取该资源，未导出的子路径会得到 `ERR_PACKAGE_PATH_NOT_EXPORTED`，被当作「没有 locale」跳过。
+2. **`files` 需包含 `locale`** —— 否则 `pnpm pack` / `npm publish` 的产物里不会带上它。
+
+`icon.svg` 走顶层 `icon` 字段（相对路径），**不需要** `exports`。
+
 ## 设计说明
 
 本包**不 import 任何 `@deepseek-ai/*` 包**。作为树外插件包，插件目录下没有 `node_modules`，`import '@deepseek-ai/dsh-tools'` 会抛 `ERR_MODULE_NOT_FOUND`，宿主侧表现为 `failed to import`、插件根本装载不上。

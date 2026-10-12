@@ -62,15 +62,69 @@ env_inspect
 |---|---|
 | 注入服务 | `['tools', 'webServer']` |
 | 只读路由 | `GET /dsh-env-inspector/snapshot` |
+| 成功信封 | `{ ok: true, data: <快照> }` |
+| 失败信封 | `{ ok: false, code: 'snapshot-failed' }`（HTTP 500，文案由客户端字典翻译） |
 
 > 路由路径**保留原名** `dsh-env-inspector`（未随包名改为 `-plus`），
-> 以避免既有 profile 的注册点失效。
+> 以避免既有 profile 的注册点失效。`settings.section` 的注册 id 同理保留原名；
+> 而 locale 命名空间用**包名** `dsh-env-inspector-plus`（避免与 npm 上同名第三方包撞字典）。
 
-## 展示元数据（locale）
+## 中英双语（三套互相独立的机制，别混）
+
+### ① 运行时 UI 文案 —— `client/client.js` 里的字典（45 条）
+
+客户端半身走平台官方 locale 服务：
+
+```js
+const NS = 'dsh-env-inspector-plus'          // 命名空间用包名，避免与他人撞名
+ctx.effect(() => ctx.locale.register(NS, { zh, en }), NS + ': dictionaries')
+const t = ctx.locale.bind(NS)
+ctx.slots.register({ ..., locale: NS }, EnvInspectorSection)   // 渲染器自动注入 t
+```
+
+- **每个 `ctx.slots.register` 都要带 `locale: NS`** —— 平台渲染器据此把 `t` 座位自动注入组件
+  props，所以组件里直接 `props.t`，**不需要**再写 `inject: () => ({ t })`。
+- **设置分页导航项的 `label` 必须用函数**（`() => t('section.label')`）：设置页导航每次读取时经
+  `resolveSlotLabel` 求值，语言切换后这一格立刻跟着变，不用重新注册。写成固定字符串则切换语言
+  后仍是旧语言。
+- **必须声明客户端注入**：`package.json` 的 `dsh.client.inject` 含
+  `@deepseek-ai/dsh-client-locale`，插件对象 `inject` 含 `'locale'`。缺了它，注册带 `locale:` 的
+  插槽会抛 `SlotAssemblyError`。
+- 一条消息 = 一个完整句子，变量用 `{name}` 占位。**不要片段拼接** —— 中英语序不同
+  （`2 d 3 h` vs 「2 天 3 小时」），拼接式无法重排。
+- 平台 `common` 命名空间已有的通用词（`cancel` / `loading` / `unknown`…）**刻意不重复定义**，
+  查表未命中会自动回落 common。
+- 键名小写点分层级；`code.*` 的叶段可含连字符（如 `code.snapshot-failed`），因为它要一对一
+  对齐宿主回的机器可读 code。
+- **zh 与 en 的键必须完全一致**：运行时 `register` 不检查，漏键不报错、只会在该语言下显示
+  key 名。`apply` 里有一次键一致性自查 + `console.warn`（参考归档插件）。
+
+### ② 宿主 → 客户端的失败：只回机器可读 code
+
+宿主**不该知道 UI 语言**。快照路由失败时回 `{ ok: false, code: 'snapshot-failed' }`，面向用户的
+句子全部由客户端字典翻译：
+
+```js
+const HOST_CODES = { 'snapshot-failed': 'code.snapshot-failed' }   // 白名单映射
+```
+
+未知 code 退回通用文案（`error.badResponse`）—— **绝不把 `code.xxx` 这种 key 名显示给用户**。
+客户端把失败存成**描述符**（字典键 + 参数）而不是已翻好的句子，因此切换语言后错误文案即时跟随，
+不会停在取数那一刻的语言。
+
+### ③ 模型侧工具描述与 render 文本：有意保持英文单语
+
+`env_inspect` 的 `description` 与参数说明是**面向模型的能力契约**，不是 UI 文案：平台自带工具
+（`bash` / `read` / `grep`…）同样只有一份英文描述，且宿主拿不到会话的 UI 语言。
+
+`output.render` 的文本同时进「模型上下文」与「网页工具卡片」，但它也**不是本插件的界面** ——
+故写成语言无关的字段式标签（`host:` / `entry:` / `cwd:` / `uptime:` / `env:`），与平台自带工具一致。
+
+### ④ 插件展示元数据 —— `locale/*.json`
 
 `locale/en.json` 与 `locale/zh.json` 提供**插件展示元数据**（`meta.title` / `meta.description`），
 Plugin Manager 与设置页**无需激活插件**即可读取，用于显示本地化的插件名与说明。
-这与运行时 UI 文案（客户端 `ctx.locale.register`）是两套东西。
+这与上面 ① 的运行时 UI 文案是两套东西。
 
 ```json
 { "meta": { "title": "…", "description": "…" } }
@@ -90,7 +144,8 @@ Plugin Manager 与设置页**无需激活插件**即可读取，用于显示本�
 
 因此工具定义是**手写对象**（零 dsh 依赖）：`{ name, description, parameters, output, execute }`，其中 `parameters` 是**显式 JSON Schema 根对象**。这与官方 `defineTool` 语法糖编译出的形状等价。
 
-客户端 bundle 仅 `require` 平台种子表内的模块（`react`）。
+客户端 bundle 仅 `require` 平台种子表内的模块（`react` 与
+`@deepseek-ai/dsh-client-ui-primitives`）；`slots` / `locale` 两个服务走 `dsh.client.inject` 声明。
 
 ## 许可证
 

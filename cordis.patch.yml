@@ -14,5 +14,5 @@
 # 而 HTTP 路由与设置分页 id 刻意**保留原名** dsh-env-inspector，避免既有
 # profile 的注册点失效。
 - insert:
-    - id: dsh-env-inspector-plus
+    - id: env-inspector
       name: 'dsh-env-inspector-plus'

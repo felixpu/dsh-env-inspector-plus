@@ -1,6 +1,6 @@
 {
   "name": "dsh-env-inspector-plus",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "环境体检：在「设置 → 环境体检」加一个分页，展示当前 DSH 宿主进程的身份（pid / 入口 / 工作目录 / Node / 运行时长）与环境变量分组（总数、DSH_ 前缀组、凭证形态组），值一律不出宿主；同时给模型一个只读的 env_inspect 工具。",
   "icon": "icon.svg",
   "type": "module",
